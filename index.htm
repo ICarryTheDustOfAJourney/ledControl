@@ -1,0 +1,97 @@
+<!DOCTYPE html> 
+<html lang=en>
+<!-- 
+	Demo how to use the webinterface led.php to control
+	a WiFi box RGB LED stripe controller as available from applamp.nl
+	
+	change the IP address below to you WiFi box' address
+	
+	2013 by Volker Kinkelin, grundguetiger at gmail dot com 
+-->
+<head>
+<title>WiFi Box RGB LED Control Demo</title>
+<style type="text/css" media="screen">
+	body {
+		font-family: Verdana;
+		color: #fff;
+		background-color:#000;
+	}
+	div, button { 
+		padding: 1em;
+	}
+	#hue {
+		width: 30em;
+	}
+</style>
+</head>
+<body>
+<h1>WiFi Box RGB LED Control Demo V1.0</h1>
+Commands:
+<div>
+	<button onclick="doCommand(event)">on</button>
+	<button onclick="doCommand(event)">off</button>
+	<button onclick="doCommand(event)">brightup</button>
+	<button onclick="doCommand(event)">brightdown</button>
+	<button onclick="doCommand(event)">speedup</button>
+	<button onclick="doCommand(event)">speeddown</button>
+	<button onclick="doCommand(event)">effectup</button>
+	<button onclick="doCommand(event)">effectdown</button>
+</div>
+Hue:
+<div>
+	<input id="hue" type="range" min="0" max="255" step="1" value="0" onchange="setHue(this.value)"/>
+	<span id="hueval">0</span>
+</div>
+<script>
+
+// adapt this IP address to your WiFi Box's:
+var myIP = "192.168.1.168"; 
+
+function callWebService( params ) {
+
+	params = params || {};
+	
+	// add common params 
+	params.ip = myIP;
+	params._cb = (new Date()).getTime();
+	
+	// convert obj into query string
+	var paraArr = [];
+	 
+	for(var param in params)
+		paraArr.push(encodeURIComponent(param) + "=" + encodeURIComponent( params[param]) );
+		
+	// build final URL
+	var url = "./led.php?" + paraArr.join("&");
+  
+	// call webservice, ignore answer
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.open("GET", url ,true );
+	xmlhttp.send();
+
+}
+
+function setHue( value ) {
+	
+	var params = {
+		hue: parseInt(value)
+	};
+	
+	callWebService( params );
+
+	// show updated value
+	document.getElementById("hueval").innerHTML = value;
+}
+
+function doCommand( evt ) {
+
+	var params = {
+		cmd: evt.target.innerHTML 
+	};
+	
+	callWebService( params );
+
+}
+</script>
+</body>
+</html>
