@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE HTML>
 <html lang=en>
 <!-- 
 	Demo how to use the webinterface led.php to control
@@ -7,43 +7,54 @@
 	change the IP address below to you WiFi box' address
 	
 	2013 by Volker Kinkelin, grundguetiger at gmail dot com 
+	V 1.0 02.09.2013 
+	 - initial release
+	 
+	V 1.1 04.09.2013 
+	 - added the unevitable colorwheel
+	 - new layout matching the hardware control
+	 - IE 10 compatible
+	 - various cosmetics
 -->
 <head>
-<title>WiFi Box RGB LED Control Demo</title>
+<meta http-equiv="X-UA-Compatible" content="IE=10"/>
+<title>WiFi Box RGB LED Control Demo V1.1</title>
 <style type="text/css" media="screen">
 	body {
-		font-family: Verdana;
-		color: #fff;
 		background-color:#000;
 	}
-	div, button { 
-		padding: 1em;
+	canvas{ 
+		margin: 1em;
 	}
-	#hue {
-		width: 30em;
+	button{
+		min-width: 8em;
+		min-height: 3em;
+	}
+	#huecontainer {
+		text-align:center; 
+		width:400px;
 	}
 </style>
 </head>
 <body>
-<h1>WiFi Box RGB LED Control Demo V1.0</h1>
-Commands:
-<div>
-	<button onclick="doCommand(event)">on</button>
-	<button onclick="doCommand(event)">off</button>
-	<button onclick="doCommand(event)">brightup</button>
-	<button onclick="doCommand(event)">brightdown</button>
-	<button onclick="doCommand(event)">speedup</button>
-	<button onclick="doCommand(event)">speeddown</button>
-	<button onclick="doCommand(event)">effectup</button>
-	<button onclick="doCommand(event)">effectdown</button>
-</div>
-Hue:
-<div>
-	<input id="hue" type="range" min="0" max="255" step="1" value="0" onchange="setHue(this.value)"/>
-	<span id="hueval">0</span>
+<div id="huecontainer">
+	<div>
+		<button onclick="doCommand(event)">on</button>
+		<button onclick="doCommand(event)">off</button>
+	</div>
+	<canvas id="huewheel" width="300" height="300" onclick="clickWheel(event)"></canvas>
+	<div>
+		<button onclick="doCommand(event)">brightup</button>
+		<button onclick="doCommand(event)">speedup</button>
+		<button onclick="doCommand(event)">effectup</button>
+	</div>
+	<div>
+		<button onclick="doCommand(event)">brightdown</button>
+		<button onclick="doCommand(event)">speeddown</button>
+		<button onclick="doCommand(event)">effectdown</button>
+	</div>
 </div>
 <script>
-
 // adapt this IP address to your WiFi Box's:
 var myIP = "192.168.1.168"; 
 
@@ -71,18 +82,6 @@ function callWebService( params ) {
 
 }
 
-function setHue( value ) {
-	
-	var params = {
-		hue: parseInt(value)
-	};
-	
-	callWebService( params );
-
-	// show updated value
-	document.getElementById("hueval").innerHTML = value;
-}
-
 function doCommand( evt ) {
 
 	var params = {
@@ -92,6 +91,63 @@ function doCommand( evt ) {
 	callWebService( params );
 
 }
+
+function setHue( value ) {
+	
+	var params = {
+		hue: parseInt(value)
+	};
+	
+	callWebService( params );
+
+}
+
+function clickWheel( evt ) {
+
+	var dx = evt.clientX - evt.target.offsetLeft - evt.target.width/2,
+	    dy = evt.clientY - evt.target.offsetTop - evt.target.height/2,
+		 hue = Math.round((Math.atan2( dy, dx) * 256 / (Math.PI*2) + 256 + 63) % 256);
+		 
+	evt.target.caption = hue;
+	setHue( hue );
+	
+}
+
+function drawHueWheel( canvasID ){
+
+	var canvas = document.getElementById(canvasID);
+
+	var radius = canvas.height / 3;
+	var center = canvas.height / 2;
+	var offsetAngle = 90 * Math.PI/180;
+	
+	var ctx = canvas.getContext('2d');
+	ctx.lineWidth = radius;
+
+	var step = 2;
+	for(angle = 0; angle <= 360; angle += step) {
+	
+		var red = Math.abs(angle - 240),
+		    green = Math.abs(angle - 120),
+		    blue = angle;
+		
+		ctx.strokeStyle = 'rgb('+ Math.round((Math.abs(180 - red) * 4.25) - 255) +
+			                 ', '+ Math.round((Math.abs(180 - green) * 4.25) - 255) +
+			                 ', '+ Math.round((Math.abs(180 - blue) * 4.25) - 255) +')';
+
+		var startAngle = ((angle+step) * Math.PI / 180) - offsetAngle;
+		var endAngle = ((angle-step) * Math.PI / 180) - offsetAngle;
+
+		ctx.beginPath();
+		ctx.arc(center, center, radius, startAngle, endAngle, true);
+		ctx.stroke();
+		ctx.closePath();
+
+	}
+
+} // function drawHueWheel( canvas ){
+
+drawHueWheel( "huewheel");
 </script>
 </body>
 </html>
