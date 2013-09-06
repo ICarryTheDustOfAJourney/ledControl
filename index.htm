@@ -7,6 +7,10 @@
 	change the IP address below to you WiFi box' address
 	
 	2013 by Volker Kinkelin, grundguetiger at gmail dot com 
+	
+	avaliable from:
+		https://github.com/grundguetiger/ledControl
+		
 	V 1.0 02.09.2013 
 	 - initial release
 	 
@@ -15,43 +19,64 @@
 	 - new layout matching the hardware control
 	 - IE 10 compatible
 	 - various cosmetics
+	 
+	V 1.2 06.09.2013
+	 - more mobile friendly 
+	 - cosmetics, minor changes
 -->
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=10"/>
-<title>WiFi Box RGB LED Control Demo V1.1</title>
+<meta name="viewport" content="width=device-width, user-scalable=false;">
+<title>WiFi Box RGB LED Control Demo V1.2</title>
 <style type="text/css" media="screen">
 	body {
-		background-color:#000;
+		background-color: #000;
 	}
-	canvas{ 
-		margin: 1em;
+	canvas { 
+		margin: 1em 0;
+		cursor: crosshair;
+		-webkit-user-select: none;
+		-khtml-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+
 	}
-	button{
-		min-width: 8em;
-		min-height: 3em;
+	button {
+		min-width: 90px;
+		min-height: 4em;
+		border: none;
+		background: none repeat scroll 0 center #333;
+		color: #fff;
+		margin: 0 1px;
+		outline: none;
+		cursor: pointer;
 	}
-	#huecontainer {
-		text-align:center; 
-		width:400px;
+	button:active {
+		background-color: #f00;
+	}
+	#ledcontainer {
+		text-align: center; 
+		width: 300px;
 	}
 </style>
 </head>
 <body>
-<div id="huecontainer">
+<div id="ledcontainer">
 	<div>
-		<button onclick="doCommand(event)">on</button>
-		<button onclick="doCommand(event)">off</button>
+		<button onclick="doCommand('on')">on</button>
+		<button onclick="doCommand('off')">off</button>
 	</div>
-	<canvas id="huewheel" width="300" height="300" onclick="clickWheel(event)"></canvas>
+	<canvas id="huewheel" width="250" height="250" onclick="clickWheel(event)" onmousemove="touchWheel(event)" touchmove="clickWheel(event)"></canvas>
 	<div>
-		<button onclick="doCommand(event)">brightup</button>
-		<button onclick="doCommand(event)">speedup</button>
-		<button onclick="doCommand(event)">effectup</button>
+		<button onclick="doCommand('brightup')">brighter</button>
+		<button onclick="doCommand('speedup')">faster</button>
+		<button onclick="doCommand('effectup')">program +</button>
 	</div>
 	<div>
-		<button onclick="doCommand(event)">brightdown</button>
-		<button onclick="doCommand(event)">speeddown</button>
-		<button onclick="doCommand(event)">effectdown</button>
+		<button onclick="doCommand('brightdown')">darker</button>
+		<button onclick="doCommand('speeddown')">slower</button>
+		<button onclick="doCommand('effectdown')">program -</button>
 	</div>
 </div>
 <script>
@@ -82,10 +107,10 @@ function callWebService( params ) {
 
 }
 
-function doCommand( evt ) {
+function doCommand( command ) {
 
 	var params = {
-		cmd: evt.target.innerHTML 
+		cmd: command 
 	};
 	
 	callWebService( params );
@@ -102,6 +127,13 @@ function setHue( value ) {
 
 }
 
+function touchWheel( evt ) {
+
+	if(evt.buttons)
+		clickWheel( evt );
+		 
+}
+
 function clickWheel( evt ) {
 
 	var dx = evt.clientX - evt.target.offsetLeft - evt.target.width/2,
@@ -113,9 +145,7 @@ function clickWheel( evt ) {
 	
 }
 
-function drawHueWheel( canvasID ){
-
-	var canvas = document.getElementById(canvasID);
+function drawHueWheel( canvas ){
 
 	var radius = canvas.height / 3;
 	var center = canvas.height / 2;
@@ -124,7 +154,7 @@ function drawHueWheel( canvasID ){
 	var ctx = canvas.getContext('2d');
 	ctx.lineWidth = radius;
 
-	var step = 2;
+	var step = 1;
 	for(angle = 0; angle <= 360; angle += step) {
 	
 		var red = Math.abs(angle - 240),
@@ -147,7 +177,9 @@ function drawHueWheel( canvasID ){
 
 } // function drawHueWheel( canvas ){
 
-drawHueWheel( "huewheel");
+var canvas = document.getElementById("huewheel");
+drawHueWheel( canvas );
+
 </script>
 </body>
 </html>
